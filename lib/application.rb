@@ -21,8 +21,6 @@ class Lamp
 
       exit(1) unless assistive_device_enabled?
 
-      lamp_server?
-      
 #      window frame: [100, 100, 500, 500], title: 'Lamp' do |win|
 #        win << label(text: 'Hello from HotCocoa', layout: {start: false})
 #        win.will_close { exit }
@@ -73,13 +71,71 @@ class Lamp
                 repeats: true
 
     @running = false
+
+    Thread.new do
+      start_udp_server
+    end
+
+    Thread.new do
+      ping_udp_server
+    end
   end
   
   # test
   def on_test(menu)
     Thread.new do
-      switch_lamp! if lamp_server?
+      switch_lamp! if udp_server?
     end
+  end
+
+  def udp_server?
+#    weburl = web_view(:layout => {:expand =>  [:width, :height]}, :url => "http://www.ruby-lang.org")
+    msg =<<-eomsg
+      Your system is not properly configured.
+      Please reset Lamp device and try again.
+    eomsg
+
+    puts "pi_ip: #{pi_ip}"
+
+    unless pi_ip
+      alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
+#      alert :message => msg, :icon => image(:file => "#{lib_path}/../resources/lamp.png")
+      return false
+    end
+
+    return true
+  end
+
+  def start_udp_server
+#    weburl = web_view(:layout => {:expand =>  [:width, :height]}, :url => "http://www.ruby-lang.org")
+    msg =<<-eomsg
+      Your system is not properly configured.
+      Please reset Lamp device and try again.
+    eomsg
+
+    puts "Starting UDP server..."
+
+    s = UDPSocket.new
+    s.bind('0.0.0.0', 12345)
+
+    begin
+      body, sender = s.recvfrom(1024)
+      self.pi_ip = sender[3]
+      data = Marshal.load(body)
+    rescue Exception
+      s.close
+    end
+  end
+
+  def ping_udp_server
+    body = {:reply_port => 12345, :content => 'Hello'}
+
+    puts "Querying UDP server..."
+    s = UDPSocket.new
+    s.setsockopt(Socket::SOL_SOCKET, Socket::SO_BROADCAST, true)
+    s.send(Marshal.dump(body), 0, '<broadcast>', SERVER_LISTEN_PORT)
+    s.close
+
   end
 
   def switch_lamp!()
@@ -105,7 +161,7 @@ class Lamp
         if ringing? active_prc, prc[:capture]
           unless prc[:ringing]
             prc[:ringing] = true 
-            switch_lamp! if lamp_server?
+            switch_lamp! if udp_server?
           end
         else
           prc[:ringing] = false
@@ -151,31 +207,6 @@ class Lamp
       return false
     end
 
-  end
-
-  def lamp_server?
-#    weburl = web_view(:layout => {:expand =>  [:width, :height]}, :url => "http://www.ruby-lang.org")
-    msg =<<-eomsg
-      Your system is not properly configured.
-      Please reset Lamp device and try again.
-    eomsg
-
-    puts "Querying UDP server..."
-
-    result = UDPClient.query_server("Hello", SERVER_LISTEN_PORT) do |data, server_ip|
-      #puts "Server answered:"
-      #p(server_ip: server_ip, server_answer: data)
-      self.pi_ip = server_ip
-    end
-
-    if result
-      puts "Server ip: #{pi_ip}"
-    else
-      alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
-#      alert :message => msg, :icon => image(:file => "#{lib_path}/../resources/lamp.png")
-    end
-
-    return result
   end
 
   # quit menu item
