@@ -1,6 +1,6 @@
 require 'rubygems' # disable this for a deployed application
 require 'hotcocoa'
-require File.dirname(__FILE__) + "/udp_client"
+require "socket"
 require 'net/http'
 require 'uri'
 
@@ -91,11 +91,10 @@ class Lamp
   def udp_server?
 #    weburl = web_view(:layout => {:expand =>  [:width, :height]}, :url => "http://www.ruby-lang.org")
     msg =<<-eomsg
-      Your system is not properly configured.
-      Please reset Lamp device and try again.
+      Unable to find Lamp device: check lan cable connection.
     eomsg
 
-    puts "pi_ip: #{pi_ip}"
+    # puts "pi_ip: #{pi_ip}"
 
     unless pi_ip
       alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
@@ -113,7 +112,7 @@ class Lamp
       Please reset Lamp device and try again.
     eomsg
 
-    puts "Starting UDP server..."
+    # puts "Starting UDP server..."
 
     s = UDPSocket.new
     s.bind('0.0.0.0', 12345)
@@ -130,7 +129,7 @@ class Lamp
   def ping_udp_server
     body = {:reply_port => 12345, :content => 'Hello'}
 
-    puts "Querying UDP server..."
+    # puts "Querying UDP server..."
     s = UDPSocket.new
     s.setsockopt(Socket::SOL_SOCKET, Socket::SO_BROADCAST, true)
     s.send(Marshal.dump(body), 0, '<broadcast>', SERVER_LISTEN_PORT)
@@ -141,7 +140,7 @@ class Lamp
   def switch_lamp!()
     begin
 
-      puts "Querying http server..."
+      # puts "Querying http server..."
       uri = URI.parse("http://#{pi_ip}:4567/lamp/osx")
       
       response = Timeout::timeout(5) do
