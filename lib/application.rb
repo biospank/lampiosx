@@ -89,15 +89,10 @@ class Lamp
   end
 
   def udp_server?
-#    weburl = web_view(:layout => {:expand =>  [:width, :height]}, :url => "http://www.ruby-lang.org")
-    msg =<<-eomsg
-      Unable to find Lamp device: check lan cable connection.
-    eomsg
-
     # puts "pi_ip: #{pi_ip}"
 
     unless pi_ip
-      alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
+      msg!
 #      alert :message => msg, :icon => image(:file => "#{lib_path}/../resources/lamp.png")
       return false
     end
@@ -105,13 +100,17 @@ class Lamp
     return true
   end
 
-  def start_udp_server
-#    weburl = web_view(:layout => {:expand =>  [:width, :height]}, :url => "http://www.ruby-lang.org")
+  def msg!
     msg =<<-eomsg
-      Your system is not properly configured.
-      Please reset Lamp device and try again.
+      Unable to find Lamp device: check lan cable connection.
     eomsg
 
+    alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
+
+  end
+
+  def start_udp_server
+#    weburl = web_view(:layout => {:expand =>  [:width, :height]}, :url => "http://www.ruby-lang.org")
     # puts "Starting UDP server..."
 
     s = UDPSocket.new
@@ -149,8 +148,7 @@ class Lamp
       end
 
     rescue Exception => ex
-      #puts "Error switch_lamp!: #{ex.message()}"
-      nil
+      msg!
     end
   end
 
