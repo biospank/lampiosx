@@ -6,7 +6,7 @@ Application::Specification.new do |s|
   s.identifier = 'com.bratech.lamp'
 
   # The version of the app, usually including the build number.
-  s.version    = '1.0'
+  s.version    = '3.0'
 
   s.icon       = 'resources/lamp.icns'
   s.resources  = Dir.glob('resources/**/*.*')
@@ -20,7 +20,7 @@ Application::Specification.new do |s|
   s.embed_bridgesupport = true
 
   # optional copyright
-  # s.copyright = "2011, Your Company"
+  # s.copyright = "2013, Lampwireless"
 
   # optional short version (in contrast to the full version, the short version should not contain the build number)
   # s.short_version = "$MAJOR.$MINOR.$PATCHLEVEL"
