@@ -119,19 +119,20 @@ class Lamp
     begin
       body, sender = s.recvfrom(1024)
       self.pi_ip = sender[3]
-      data = Marshal.load(body)
+      #data = Marshal.load(body)
     rescue Exception
       s.close
     end
   end
 
   def ping_udp_server
-    body = {:reply_port => 12345, :content => 'Hello'}
+    body = "reply_port=12345,content=Hello"
 
     # puts "Querying UDP server..."
     s = UDPSocket.new
     s.setsockopt(Socket::SOL_SOCKET, Socket::SO_BROADCAST, true)
-    s.send(Marshal.dump(body), 0, '<broadcast>', SERVER_LISTEN_PORT)
+    #s.send(Marshal.dump(body), 0, '<broadcast>', SERVER_LISTEN_PORT)
+    s.send(body, 0, '<broadcast>', SERVER_LISTEN_PORT)
     s.close
 
   end
