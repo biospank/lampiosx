@@ -3,6 +3,7 @@ module HotCocoa
     status = status_item
     status.menu = menu do |s|
       s.item :test
+      s.item :reset
       s.separator
       s.item :quit, title: "Quit #{NSApp.name}"
     end

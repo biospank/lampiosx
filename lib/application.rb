@@ -12,6 +12,7 @@ class Lamp
   attr_accessor :pi_ip
   
   SERVER_LISTEN_PORT = 1234
+  CURRENT_VERSION = 30
 
   def start
     init_bridge()
@@ -79,12 +80,25 @@ class Lamp
     Thread.new do
       ping_udp_server
     end
+
+    Thread.new do
+      sleep 2
+      check_for_updates
+    end
+
   end
   
   # test
   def on_test(menu)
     Thread.new do
       switch_lamp! if udp_server?
+    end
+  end
+
+  # reset
+  def on_reset(menu)
+    Thread.new do
+      reset_lamp! if udp_server?
     end
   end
 
@@ -102,7 +116,19 @@ class Lamp
 
   def msg!
     msg =<<-eomsg
-      Unable to find Lamp device: check lan cable connection.
+Unable to find Lamp device: 
+check lan cable connection.
+    eomsg
+
+    alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
+
+  end
+
+  def download_msg!(link)
+    msg =<<-eomsg
+A new version is available. 
+Please download at: 
+#{link}
     eomsg
 
     alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
@@ -119,6 +145,7 @@ class Lamp
     begin
       body, sender = s.recvfrom(1024)
       self.pi_ip = sender[3]
+      #puts body
       #data = Marshal.load(body)
     rescue Exception
       s.close
@@ -149,6 +176,23 @@ class Lamp
       end
 
     rescue Exception => ex
+      puts ex.message
+      msg!
+    end
+  end
+
+  def reset_lamp!()
+    begin
+
+      # puts "Querying http server..."
+      uri = URI.parse("http://#{pi_ip}:4567/lamp/led/reset")
+      
+      response = Timeout::timeout(5) do
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.request(Net::HTTP::Get.new(uri.request_uri))
+      end
+
+    rescue Exception => ex
       msg!
     end
   end
@@ -165,6 +209,38 @@ class Lamp
           prc[:ringing] = false
         end
       end
+    end
+  end
+
+  def check_for_updates
+    begin
+
+      # puts "Querying http server..."
+      uri = URI.parse("http://#{pi_ip}:4567/lamp/osx/version")
+      
+      response = Timeout::timeout(5) do
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.request(Net::HTTP::Get.new(uri.request_uri))
+      end
+
+      version = response.body
+
+      if version.to_i > CURRENT_VERSION
+        # puts "Querying http server..."
+        uri = URI.parse("http://#{pi_ip}:4567/lamp/osx/download")
+        
+        response = Timeout::timeout(5) do
+          http = Net::HTTP.new(uri.host, uri.port)
+          http.request(Net::HTTP::Get.new(uri.request_uri))
+        end
+
+        download_msg!(response.body)
+
+      end
+
+    rescue Exception => ex
+      puts ex.message
+      msg!
     end
   end
   
@@ -188,9 +264,9 @@ class Lamp
 
   def assistive_device_enabled?
     msg =<<-eomsg
-      Your system is not properly configured to run this script.
-      Please select the 'Enable access for assistive devices" checkbox
-      and trigger the script again to proceed.
+Your system is not properly configured to run this script.
+Please select the 'Enable access for assistive devices" checkbox
+and trigger the script again to proceed.
     eomsg
     
     if @system_events.UIElementsEnabled
