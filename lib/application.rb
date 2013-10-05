@@ -81,10 +81,10 @@ class Lamp
       ping_udp_server
     end
 
-    Thread.new do
-      sleep 2
-      check_for_updates
-    end
+    # Thread.new do
+    #   sleep 2
+    #   check_for_updates
+    # end
 
   end
   
@@ -99,6 +99,13 @@ class Lamp
   def on_reset(menu)
     Thread.new do
       reset_lamp! if udp_server?
+    end
+  end
+
+  # reset
+  def on_check(menu)
+    Thread.new do
+      check_for_updates if udp_server?
     end
   end
 
@@ -129,6 +136,15 @@ check lan cable connection.
 A new version is available. 
 Please download at: 
 #{link}
+    eomsg
+
+    alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
+
+  end
+
+  def up_to_date_msg!()
+    msg =<<-eomsg
+Lamp is up to date.
     eomsg
 
     alert :message => msg, :icon => image(:file => "#{lib_path}/../lamp.png")
@@ -176,7 +192,7 @@ Please download at:
       end
 
     rescue Exception => ex
-      puts ex.message
+      # puts ex.message
       msg!
     end
   end
@@ -236,10 +252,12 @@ Please download at:
 
         download_msg!(response.body)
 
+      else
+        up_to_date_msg!
       end
 
     rescue Exception => ex
-      puts ex.message
+      # puts ex.message
       msg!
     end
   end

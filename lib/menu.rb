@@ -5,6 +5,8 @@ module HotCocoa
       s.item :test
       s.item :reset
       s.separator
+      s.item :check, title: "Check for updates"
+      s.separator
       s.item :quit, title: "Quit #{NSApp.name}"
     end
     status.image = image :file => "#{lib_path}/../lamp.png", :size => [ 17, 17 ]
