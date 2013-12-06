@@ -186,7 +186,7 @@ Lamp is up to date.
       # puts "Querying http server..."
       uri = URI.parse("http://#{pi_ip}:4567/lamp/osx")
       
-      response = Timeout::timeout(5) do
+      response = Timeout::timeout(10) do
         http = Net::HTTP.new(uri.host, uri.port)
         http.request(Net::HTTP::Get.new(uri.request_uri))
       end
@@ -203,7 +203,7 @@ Lamp is up to date.
       # puts "Querying http server..."
       uri = URI.parse("http://#{pi_ip}:4567/lamp/led/reset")
       
-      response = Timeout::timeout(5) do
+      response = Timeout::timeout(10) do
         http = Net::HTTP.new(uri.host, uri.port)
         http.request(Net::HTTP::Get.new(uri.request_uri))
       end
@@ -234,7 +234,7 @@ Lamp is up to date.
       # puts "Querying http server..."
       uri = URI.parse("http://#{pi_ip}:4567/lamp/osx/version")
       
-      response = Timeout::timeout(5) do
+      response = Timeout::timeout(10) do
         http = Net::HTTP.new(uri.host, uri.port)
         http.request(Net::HTTP::Get.new(uri.request_uri))
       end
@@ -245,7 +245,7 @@ Lamp is up to date.
         # puts "Querying http server..."
         uri = URI.parse("http://#{pi_ip}:4567/lamp/osx/download")
         
-        response = Timeout::timeout(5) do
+        response = Timeout::timeout(10) do
           http = Net::HTTP.new(uri.host, uri.port)
           http.request(Net::HTTP::Get.new(uri.request_uri))
         end
